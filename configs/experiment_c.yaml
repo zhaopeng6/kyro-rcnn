@@ -1,0 +1,56 @@
+datasets:
+  autokary:
+    root: dataset/Autokary2022_1600x1600/train_labelme
+    validation_root: dataset/Autokary2022_1600x1600/test_labelme
+  lowq:
+    annotations: dataset/lowq54816/single_chromosomes_object/anntations
+    images: dataset/lowq54816/single_chromosomes_object/JEPG
+model:
+  class_agnostic: true
+  num_classes: 2
+  mixed_supervision: true
+  pretrained: true
+  min_size: 960
+  max_size: 1280
+  score_threshold: 0.5
+  nms_threshold: 0.7
+  max_detections_per_image: 70
+  weak_mask_supervision:
+    enabled: true
+    projection_weight: 1.0
+    pairwise_weight: 1.0
+    pairwise_color_threshold: 0.12
+postprocessing:
+  mask_nms: {enabled: false}
+augmentation:
+  scale: {enabled: true, min: 0.6, max: 1.8, probability: 1.0}
+  horizontal_flip_probability: 0.5
+  vertical_flip_probability: 0.5
+  translation: {enabled: true, max_fraction: 0.08, probability: 0.5}
+  gaussian_noise: {enabled: true, std: 0.02, probability: 0.3}
+training:
+  seed: 42
+  device: mps
+  polygon_batch_probability: 0.5
+  box_batch_probability: 0.5
+  batch_size: 1
+  validation_batch_size: 1
+  num_workers: 0
+  optimizer: adamw
+  learning_rate: 0.0001
+  weight_decay: 0.0005
+  gradient_clip_norm: 1.0
+  validation_interval: 10
+  validation_batches: 1
+  checkpoint_interval: 10
+  total_steps: 300
+  output_dir: outputs/experiment_c_boxinst
+  tensorboard: {enabled: true, log_dir: outputs/experiment_c_boxinst/tensorboard}
+scale_test:
+  factors: [0.6, 0.75, 1.0, 1.25, 1.5, 1.75]
+  score_threshold: 0.5
+  internal_resize_policy: torchvision
+  max_images: 2
+  selection_seed: 42
+  save_visualizations: true
+  max_visualizations_per_factor: 2

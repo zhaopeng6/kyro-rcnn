@@ -1,0 +1,61 @@
+# MVP: Experiment A identifies chromosome instances; a separate 24-way model
+# classifies mask-isolated crops, which are then placed into a karyogram.
+datasets:
+  autokary:
+    root: dataset/Autokary2022_1600x1600/train_labelme
+    validation_root: dataset/Autokary2022_1600x1600/test_labelme
+model:
+  # Keep architecture compatible with the Experiment-A checkpoint.
+  class_agnostic: true
+  num_classes: 2
+  pretrained: false
+  min_size: 960
+  max_size: 1280
+  score_threshold: 0.5
+  nms_threshold: 0.7
+  max_detections_per_image: 70
+postprocessing:
+  mask_nms:
+    enabled: true
+    iou_threshold: 0.85
+    box_iou_threshold: 0.8
+    mask_threshold: 0.5
+    class_aware: true
+classifier_training:
+  device: mps
+  # Options: resnet18 (fast baseline) or vit_b_16 (pretrained ViT fine-tuning).
+  architecture: vit_b_16
+  pretrained: true
+  # PEFT LoRA: freeze pretrained ViT; train LoRA attention adapters + classifier.
+  finetuning_mode: lora
+  lora:
+    # PEFT's library default is 8. We use 16 as the initial experiment.
+    rank: 8
+    alpha: 16
+    dropout: 0.1
+  # Used only by finetuning_mode: full; set 0 for LoRA.
+  freeze_backbone_epochs: 0
+  # Optional path for unattended/Colab resume; CLI --resume takes precedence.
+  resume_checkpoint: null
+  image_size: 224
+  crop_padding: 12
+  # ViT-B/16 is much larger than ResNet-18; increase only if MPS memory allows.
+  batch_size: 8
+  num_workers: 0
+  learning_rate: 0.0005
+  weight_decay: 0.01
+  epochs: 20
+  output_dir: outputs/chromosome_classifier_vit_b16_lora
+  tensorboard:
+    enabled: true
+    log_dir: outputs/chromosome_classifier_vit_b16_lora/tensorboard
+mvp_inference:
+  device: mps
+  segmentation_checkpoint: outputs/experiment_a_pretrained/last.pt
+  classifier_checkpoint: outputs/chromosome_classifier_vit_b16_lora/last.pt
+  output_dir: outputs/karyogram_mvp
+  segmentation_score_threshold: 0.5
+  mask_threshold: 0.5
+  crop_padding: 12
+  image_size: 224
+  karyogram_columns: 6
