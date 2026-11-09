@@ -13,6 +13,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "chromosome_segmentation"))
 from src.datasets.annotations import parse_labelme_annotation, parse_voc_annotation
+from src.utils.config import dataset_path
 
 
 def percentile_summary(values):
@@ -73,11 +74,11 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--config", default="configs/experiment_a.yaml")
     ap.add_argument("--output-dir", default="outputs/inspection"); args = ap.parse_args()
     config = yaml.safe_load(Path(args.config).read_text()); datasets = config["datasets"]
-    autokary_root = Path(datasets["autokary"]["root"])
+    autokary_root = dataset_path(config, datasets["autokary"]["root"])
     lowq = datasets["lowq"]
     report = {"datasets": {
         "autokary": inspect(sorted(autokary_root.rglob("*.json")), lambda p: parse_labelme_annotation(p, rasterize_masks=False), lambda p: p.parent.name),
-        "lowq_24_class": inspect(sorted(Path(lowq["annotations"]).glob("*.xml")), parse_voc_annotation, lambda p: p.stem),
+        "lowq_24_class": inspect(sorted(dataset_path(config, lowq["annotations"]).glob("*.xml")), parse_voc_annotation, lambda p: p.stem),
     }}
     out = Path(args.output_dir); out.mkdir(parents=True, exist_ok=True)
     (out / "dataset_report.json").write_text(json.dumps(report, indent=2) + "\n")

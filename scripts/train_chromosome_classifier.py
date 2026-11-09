@@ -18,6 +18,7 @@ from src.karyogram.classifier import CLASS_NAMES, LORA_DEFAULT_RANK, build_chrom
 from src.karyogram.dataset import AutoKaryCropDataset
 from src.karyogram.device import resolve_device
 from src.utils.tensorboard import TrainingTensorBoard
+from src.utils.config import dataset_path
 
 
 def configure_trainable_layers(model, architecture: str, freeze_backbone: bool) -> int:
@@ -81,8 +82,8 @@ def main():
     if architecture == "vit_b_16" and int(options.get("image_size", 224)) != 224:
         raise ValueError("torchvision vit_b_16 requires classifier_training.image_size: 224")
     device = resolve_device(args.device or options.get("device", "cpu"))
-    train_data = AutoKaryCropDataset(cfg["datasets"]["autokary"]["root"], options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
-    validation_data = AutoKaryCropDataset(cfg["datasets"]["autokary"]["validation_root"], options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
+    train_data = AutoKaryCropDataset(dataset_path(cfg, cfg["datasets"]["autokary"]["root"]), options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
+    validation_data = AutoKaryCropDataset(dataset_path(cfg, cfg["datasets"]["autokary"]["validation_root"]), options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
     loader_args = dict(batch_size=int(options.get("batch_size", 32)), num_workers=int(options.get("num_workers", 0)), pin_memory=device.type == "cuda")
     train_loader = DataLoader(train_data, shuffle=True, **loader_args)
     validation_loader = DataLoader(validation_data, shuffle=False, **loader_args)

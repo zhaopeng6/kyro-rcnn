@@ -174,3 +174,28 @@ The output directory `outputs/karyogram_mvp/<image-name>/` contains
 and `predictions.json` with segmentation/type confidence. This is an MVP
 classification workflow, not a clinical karyotyping result; inspect the
 segments and confidence values before interpreting counts or abnormalities.
+
+### Kaggle / external dataset location
+
+All experiment and MVP configs support one dataset base directory:
+
+```yaml
+paths:
+  data_root: .
+```
+
+Every *relative* entry under `datasets` is joined to `paths.data_root`; an
+absolute dataset entry is used unchanged. For example, if the Kaggle input
+folder contains the repository's `dataset/` directory, change only this:
+
+```yaml
+paths:
+  data_root: /kaggle/input/my-chromosome-data
+```
+
+Then the existing `dataset/Autokary2022_1600x1600/...` entries resolve to
+`/kaggle/input/my-chromosome-data/dataset/Autokary2022_1600x1600/...`.
+If your Kaggle input itself contains `Autokary2022_1600x1600/` rather than a
+parent `dataset/` directory, set `data_root` to that input directory and remove
+the leading `dataset/` from the affected `datasets` paths. Keep outputs outside
+the read-only Kaggle input, for example under `/kaggle/working/`.

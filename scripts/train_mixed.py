@@ -12,15 +12,16 @@ from src.datasets.collate import detection_collate
 from src.datasets.transforms import build_training_transform
 from src.models.mask_rcnn import build_mask_rcnn
 from src.training.mixed_trainer import train_mixed_supervision
+from src.utils.config import dataset_path
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument("--config", required=True); parser.add_argument("--steps", type=int, default=None); args = parser.parse_args()
     cfg = yaml.safe_load(Path(args.config).read_text()); train = cfg["training"]
     torch.manual_seed(train.get("seed", 42)); transform = build_training_transform(cfg.get("augmentation", {}))
-    polygon = AutoKaryDataset(cfg["datasets"]["autokary"]["root"], transform=transform)
+    polygon = AutoKaryDataset(dataset_path(cfg, cfg["datasets"]["autokary"]["root"]), transform=transform)
     lowq = cfg["datasets"]["lowq"]
-    boxes = LowqBoxDataset(lowq["annotations"], lowq["images"], transform=transform)
+    boxes = LowqBoxDataset(dataset_path(cfg, lowq["annotations"]), dataset_path(cfg, lowq["images"]), transform=transform)
     kwargs = {"batch_size": train.get("batch_size", 1), "num_workers": train.get("num_workers", 0), "collate_fn": detection_collate}
     polygon_loader, box_loader = DataLoader(polygon, shuffle=True, **kwargs), DataLoader(boxes, shuffle=True, **kwargs)
     model = build_mask_rcnn(cfg); optimizer = torch.optim.SGD(model.parameters(), lr=train.get("learning_rate", .005), momentum=.9, weight_decay=train.get("weight_decay", .0005))

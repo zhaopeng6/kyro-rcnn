@@ -20,6 +20,7 @@ from src.evaluation.postprocessing import build_postprocessor
 from src.evaluation.scale import disable_model_internal_resize, scale_polygon_sample
 from src.evaluation.visualization import save_prediction_comparison
 from src.models.mask_rcnn import build_mask_rcnn
+from src.utils.config import dataset_path
 
 
 def write_plots(rows, output_dir):
@@ -68,7 +69,7 @@ def main():
     cfg = yaml.safe_load(Path(args.config).read_text()); scale_cfg = cfg.get("scale_test", {})
     device = torch.device(args.device or cfg["training"].get("device", "cpu")); output_dir = Path(args.output_dir or Path(cfg["training"]["output_dir"]) / "scale_benchmark")
     output_dir.mkdir(parents=True, exist_ok=True)
-    dataset = AutoKaryDataset(cfg["datasets"]["autokary"]["validation_root"], transform=ToTensor())
+    dataset = AutoKaryDataset(dataset_path(cfg, cfg["datasets"]["autokary"]["validation_root"]), transform=ToTensor())
     model = build_mask_rcnn(cfg).to(device); state = torch.load(args.checkpoint, map_location=device, weights_only=False); model.load_state_dict(state["model"])
     resize_policy = scale_cfg.get("internal_resize_policy", "none")
     if resize_policy == "none":

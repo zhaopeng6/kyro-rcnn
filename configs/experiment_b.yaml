@@ -1,3 +1,5 @@
+paths:
+  data_root: .
 datasets:
   autokary:
     root: dataset/Autokary2022_1600x1600/train_labelme

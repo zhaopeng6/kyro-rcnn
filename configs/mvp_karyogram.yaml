@@ -1,5 +1,10 @@
 # MVP: Experiment A identifies chromosome instances; a separate 24-way model
 # classifies mask-isolated crops, which are then placed into a karyogram.
+# Dataset entries below are resolved relative to data_root. Locally this is the
+# repository; on Kaggle set it to your mounted input folder, for example
+# /kaggle/input/chromosome-datasets.
+paths:
+  data_root: .
 datasets:
   autokary:
     root: dataset/Autokary2022_1600x1600/train_labelme

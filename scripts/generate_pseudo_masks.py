@@ -7,6 +7,7 @@ import yaml
 from PIL import Image
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"chromosome_segmentation"))
 from src.datasets.annotations import parse_voc_annotation
+from src.utils.config import dataset_path
 from src.pseudo_masks.quality import score_mask
 
 def xyxy_to_micro_sam_yxyx(box):
@@ -19,9 +20,9 @@ def main():
   from micro_sam import util,prompt_based_segmentation
  except ModuleNotFoundError as exc: raise RuntimeError('Experiment D requires micro-sam. Install its documented package and model dependencies before generation.') from exc
  predictor=util.get_sam_model(model_type=settings.get('model_type','vit_b'), device=cfg['training'].get('device','cpu'))
- out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True);records=[]; xmls=sorted(Path(d['annotations']).glob('*.xml'))[:a.max_images]
+ out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True);records=[]; xmls=sorted(dataset_path(c, d['annotations']).glob('*.xml'))[:a.max_images]
  for xml in xmls:
-  ann=parse_voc_annotation(xml); image_path=Path(d['images'])/ann['filename']
+  ann=parse_voc_annotation(xml); image_path=dataset_path(c, d['images'])/ann['filename']
   if not image_path.exists(): continue
   image=np.asarray(Image.open(image_path).convert('RGB')); predictor.set_image(image)
   accepted_masks=[];accepted_boxes=[];quality=[]

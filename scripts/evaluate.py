@@ -12,6 +12,7 @@ from src.datasets.transforms import ToTensor
 from src.evaluation.metrics import evaluate_polygon_dataset
 from src.evaluation.postprocessing import build_postprocessor
 from src.models.mask_rcnn import build_mask_rcnn
+from src.utils.config import dataset_path
 
 
 def main():
@@ -22,7 +23,7 @@ def main():
     cfg = yaml.safe_load(Path(args.config).read_text()); device = torch.device(cfg["training"].get("device", "cpu"))
     root = cfg["datasets"]["autokary"].get("validation_root")
     if not root: raise ValueError("datasets.autokary.validation_root is required for evaluation")
-    dataset = AutoKaryDataset(root, transform=ToTensor())
+    dataset = AutoKaryDataset(dataset_path(cfg, root), transform=ToTensor())
     loader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=cfg["training"].get("num_workers", 0), collate_fn=detection_collate)
     model = build_mask_rcnn(cfg).to(device)
     state = torch.load(args.checkpoint, map_location=device, weights_only=False)

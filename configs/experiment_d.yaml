@@ -1,3 +1,5 @@
+paths:
+  data_root: .
 datasets:
   lowq:
     annotations: dataset/lowq54816/single_chromosomes_object/anntations
