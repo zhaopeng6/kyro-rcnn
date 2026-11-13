@@ -102,7 +102,10 @@ def main():
     train_loader = DataLoader(train_data, shuffle=True, **loader_args)
     validation_loader = DataLoader(validation_data, shuffle=False, **loader_args)
     model = build_chromosome_classifier(architecture, bool(options.get("pretrained", True)), finetuning_mode=finetuning_mode, lora_rank=lora_rank, lora_alpha=lora_alpha, lora_dropout=lora_dropout).to(device)
-    if finetuning_mode == "lora": print(json.dumps({"lora_target_modules": getattr(model, "_chromosome_lora_targets", "resolved by PEFT"), "lora_rank": lora_rank, "lora_alpha": lora_alpha}))
+    if finetuning_mode == "lora":
+        lora_startup = {"lora_target_modules": getattr(model, "_chromosome_lora_targets", "resolved by PEFT"), "lora_rank": lora_rank, "lora_alpha": lora_alpha}
+        if getattr(model, "_chromosome_torchao_warning", None): lora_startup["torchao"] = "incompatible optional torchao disabled; using standard PyTorch LoRA"
+        print(json.dumps(lora_startup))
     optimizer = torch.optim.AdamW((parameter for parameter in model.parameters() if parameter.requires_grad), lr=float(options.get("learning_rate", 3e-4)), weight_decay=float(options.get("weight_decay", 1e-4)))
     criterion = nn.CrossEntropyLoss()
     output = Path(options.get("output_dir", "outputs/chromosome_classifier")); output.mkdir(parents=True, exist_ok=True)

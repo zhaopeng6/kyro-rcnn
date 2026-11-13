@@ -225,3 +225,8 @@ python -m pip install --upgrade -r requirements-kaggle.txt
 The normal `requirements.txt` remains appropriate for a local environment.
 On Kaggle, avoid `pip install --upgrade torch torchvision` unless deliberately
 repairing or replacing both packages as one CUDA-matched pair.
+
+The classifier also detects PEFT's incompatible optional torchao check and
+falls back to regular PyTorch LoRA layers automatically. Its startup JSON will
+say that torchao was disabled; this is expected and does not reduce the
+configured LoRA rank or prevent training.

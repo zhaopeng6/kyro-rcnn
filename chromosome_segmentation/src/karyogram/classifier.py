@@ -32,6 +32,26 @@ def _resolve_vit_lora_targets(model: nn.Module) -> list[str]:
     raise RuntimeError(f"Could not find ViT attention projections for LoRA. Expected query/value or q_proj/v_proj; linear module names found: {available}")
 
 
+def _disable_incompatible_torchao() -> str | None:
+    """Avoid a Kaggle PEFT failure caused by its stale optional torchao build.
+
+    PEFT checks torchao before determining that the target is an ordinary
+    ``nn.Linear``. Some Kaggle images bundle a torchao release that PEFT rejects
+    outright, even though no torchao quantized layer is in this model. In that
+    case, disable just the optional dispatcher and use PEFT's normal PyTorch
+    LoRA implementation.
+    """
+    try:
+        from peft.tuners.lora import torchao as peft_torchao
+        peft_torchao.is_torchao_available()
+    except ModuleNotFoundError:
+        return None
+    except ImportError as error:
+        peft_torchao.is_torchao_available = lambda: False
+        return str(error)
+    return None
+
+
 def _build_lora_vit(pretrained: bool, num_classes: int, rank: int, alpha: int, dropout: float) -> nn.Module:
     """Build a Hugging Face ViT with PEFT adapters on query/value attention."""
     try:
@@ -43,12 +63,14 @@ def _build_lora_vit(pretrained: bool, num_classes: int, rank: int, alpha: int, d
     base = (ViTForImageClassification.from_pretrained(HF_VIT_CHECKPOINT, num_labels=num_classes, id2label={index: name for name, index in label2id.items()}, label2id=label2id, ignore_mismatched_sizes=True)
             if pretrained else ViTForImageClassification(ViTConfig(num_labels=num_classes, id2label={index: name for name, index in label2id.items()}, label2id=label2id)))
     targets = _resolve_vit_lora_targets(base)
+    torchao_warning = _disable_incompatible_torchao()
     # PEFT has no IMAGE_CLASSIFICATION TaskType. Leaving task_type unset uses
     # generic adapter injection, while modules_to_save keeps the newly created
     # 24-class classifier trainable and serialised with the adapter.
     lora = LoraConfig(r=int(rank), lora_alpha=int(alpha), lora_dropout=float(dropout), target_modules=targets, modules_to_save=["classifier"], bias="none")
     model = get_peft_model(base, lora)
     model._chromosome_lora_targets = targets
+    model._chromosome_torchao_warning = torchao_warning
     return model
 
 
