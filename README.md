@@ -199,3 +199,14 @@ If your Kaggle input itself contains `Autokary2022_1600x1600/` rather than a
 parent `dataset/` directory, set `data_root` to that input directory and remove
 the leading `dataset/` from the affected `datasets` paths. Keep outputs outside
 the read-only Kaggle input, for example under `/kaggle/working/`.
+
+Before a Kaggle classifier run, validate the mounted paths without loading a
+model or GPU:
+
+```bash
+python scripts/train_chromosome_classifier.py \
+  --config configs/mvp_karyogram.yaml --check-data
+```
+
+It prints the resolved train/validation directories and labelled crop counts;
+the expected local counts are 23,465 train and 2,873 validation crops.

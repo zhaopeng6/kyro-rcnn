@@ -65,6 +65,7 @@ def main():
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--device", default=None)
     parser.add_argument("--resume", default=None, help="Resume from a classifier checkpoint (usually output_dir/last.pt).")
+    parser.add_argument("--check-data", action="store_true", help="Print resolved dataset paths/counts and exit; useful before a Kaggle run.")
     args = parser.parse_args()
     cfg = yaml.safe_load(Path(args.config).read_text())
     options = cfg["classifier_training"]
@@ -81,9 +82,22 @@ def main():
     if freeze_backbone_epochs < 0: raise ValueError("classifier_training.freeze_backbone_epochs must be zero or positive")
     if architecture == "vit_b_16" and int(options.get("image_size", 224)) != 224:
         raise ValueError("torchvision vit_b_16 requires classifier_training.image_size: 224")
+    train_root = dataset_path(cfg, cfg["datasets"]["autokary"]["root"])
+    validation_root = dataset_path(cfg, cfg["datasets"]["autokary"]["validation_root"])
+    for split, root in (("training", train_root), ("validation", validation_root)):
+        if not root.is_dir():
+            raise FileNotFoundError(f"{split.capitalize()} AutoKary directory does not exist: {root}\n"
+                                f"paths.data_root={cfg.get('paths', {}).get('data_root', '.')} and the configured datasets.autokary path were combined. "
+                                "On Kaggle, use `find /kaggle/input -type d -name train_labelme` to locate the attached dataset, then update paths.data_root and/or datasets.autokary.root.")
+    train_data = AutoKaryCropDataset(train_root, options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
+    validation_data = AutoKaryCropDataset(validation_root, options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
+    print(json.dumps({"dataset_paths": {"train": str(train_root), "validation": str(validation_root)}, "labelled_chromosome_crops": {"train": len(train_data), "validation": len(validation_data)}}))
+    if not len(train_data):
+        json_count = sum(1 for _ in train_root.rglob("*.json"))
+        raise RuntimeError(f"No valid AutoKary chromosome crops found under {train_root} ({json_count} JSON files found). "
+                           "The classifier requires LabelMe annotation JSON files with polygon shapes labelled 1-24. Check the Kaggle directory layout and datasets.autokary.root.")
+    if args.check_data: return
     device = resolve_device(args.device or options.get("device", "cpu"))
-    train_data = AutoKaryCropDataset(dataset_path(cfg, cfg["datasets"]["autokary"]["root"]), options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
-    validation_data = AutoKaryCropDataset(dataset_path(cfg, cfg["datasets"]["autokary"]["validation_root"]), options.get("crop_padding", 12), options.get("image_size", 224), options.get("normalization", "imagenet"))
     loader_args = dict(batch_size=int(options.get("batch_size", 32)), num_workers=int(options.get("num_workers", 0)), pin_memory=device.type == "cuda")
     train_loader = DataLoader(train_data, shuffle=True, **loader_args)
     validation_loader = DataLoader(validation_data, shuffle=False, **loader_args)
