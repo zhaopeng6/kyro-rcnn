@@ -210,3 +210,18 @@ python scripts/train_chromosome_classifier.py \
 
 It prints the resolved train/validation directories and labelled crop counts;
 the expected local counts are 23,465 train and 2,873 validation crops.
+
+Kaggle images can include an older preinstalled `torchao` that is incompatible
+with newer PEFT releases. `torchao` is optional here, so remove it rather than
+upgrading it; this avoids pip changing Kaggle's pre-matched PyTorch and
+torchvision binaries. Install the remaining application dependencies from the
+Kaggle-specific requirements file, then restart the Kaggle session:
+
+```bash
+python -m pip uninstall -y torchao
+python -m pip install --upgrade -r requirements-kaggle.txt
+```
+
+The normal `requirements.txt` remains appropriate for a local environment.
+On Kaggle, avoid `pip install --upgrade torch torchvision` unless deliberately
+repairing or replacing both packages as one CUDA-matched pair.

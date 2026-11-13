@@ -1,0 +1,9 @@
+# Kaggle already supplies a CUDA-matched torch + torchvision pair.
+# Do not install/upgrade torch, torchvision, torchaudio, or torchao here.
+numpy>=1.26
+Pillow>=10.0
+PyYAML>=6.0
+tensorboard>=2.14
+matplotlib>=3.8
+transformers>=4.40
+peft>=0.20
