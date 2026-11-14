@@ -1,0 +1,65 @@
+paths:
+  data_root: /kaggle/input/datasets/zhaopeng6/chromosome
+datasets:
+  autokary:
+    root: dataset/Autokary2022_1600x1600/train_labelme
+    validation_root: dataset/Autokary2022_1600x1600/test_labelme
+  lowq:
+    annotations: dataset/lowq54816/single_chromosomes_object/anntations
+    images: dataset/lowq54816/single_chromosomes_object/JEPG
+model:
+  class_agnostic: true
+  num_classes: 2
+  mixed_supervision: true
+  # Torchvision COCO-pretrained Mask R-CNN weights; detection/mask predictors
+  # are replaced for this project's background + chromosome setup.
+  pretrained: true
+  min_size: 640
+  max_size: 1024
+  score_threshold: 0.05
+  nms_threshold: 0.7
+  max_detections_per_image: 70
+postprocessing:
+  mask_nms:
+    enabled: false
+    iou_threshold: 0.85
+    box_iou_threshold: 0.8
+    mask_threshold: 0.5
+    class_aware: true
+augmentation:
+  preset: baseline
+  scale: {enabled: true, min: 0.65, max: 1.50, probability: 1.0}
+  horizontal_flip_probability: 0.5
+  vertical_flip_probability: 0.5
+  translation: {enabled: true, max_fraction: 0.08, probability: 0.5}
+  gaussian_noise: {enabled: true, std: 0.02, probability: 0.3}
+training:
+  seed: 42
+  device: cuda
+  polygon_batch_probability: 0.5
+  box_batch_probability: 0.5
+  batch_size: 2
+  validation_batch_size: 1
+  num_workers: 0
+  optimizer: adamw
+  momentum: 0.9
+  # Conservative full-model fine-tuning rate for pretrained weights.
+  learning_rate: 0.0001
+  weight_decay: 0.0005
+  gradient_clip_norm: 1.0
+  validation_interval: 1
+  validation_batches: 1
+  tensorboard:
+    enabled: true
+    log_dir: outputs/experiment_b_pretrained/tensorboard
+  total_steps: 30
+  checkpoint_interval: 10
+  output_dir: outputs/experiment_b_pretrained
+scale_test:
+  factors: [0.6, 0.75, 1.0, 1.25, 1.5, 1.75]
+  score_threshold: 0.05
+  internal_resize_policy: none
+  max_images: 2
+  selection_seed: 42
+  save_visualizations: true
+  max_visualizations_per_factor: 12

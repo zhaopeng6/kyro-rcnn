@@ -1,0 +1,14 @@
+paths:
+  data_root: /kaggle/input/datasets/zhaopeng6/chromosome
+datasets:
+  lowq:
+    annotations: dataset/lowq54816/single_chromosomes_object/anntations
+    images: dataset/lowq54816/single_chromosomes_object/JEPG
+training: {device: cuda}
+pseudo_masks:
+  model_type: vit_b
+  filter:
+    min_area_fraction: 0.02
+    max_area_fraction: 0.95
+    max_outside_fraction: 0.05
+    min_sam_score: 0.0

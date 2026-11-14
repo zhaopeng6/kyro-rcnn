@@ -1,0 +1,28 @@
+# Inference-only settings for a fair Experiment A vs B comparison.
+datasets:
+  autokary:
+    validation_root: dataset/Autokary2022_1600x1600/test_labelme
+model:
+  class_agnostic: true
+  num_classes: 2
+  pretrained: true
+  min_size: 960
+  max_size: 1280
+  score_threshold: 0.5
+  nms_threshold: 0.7
+  max_detections_per_image: 70
+postprocessing:
+  mask_nms:
+    enabled: false
+scale_test:
+  factors: [0.6, 0.75, 1.0, 1.25, 1.5, 1.75]
+  score_threshold: 0.5
+  # Evaluate the deployed resize pipeline identically for both experiments.
+  internal_resize_policy: torchvision
+  max_images: 2
+  selection_seed: 42
+  save_visualizations: true
+  max_visualizations_per_factor: 2
+training:
+  device: mps
+  output_dir: outputs/comparison
