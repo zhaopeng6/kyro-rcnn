@@ -39,7 +39,7 @@ augmentation:
 training:
   seed: 42
   device: cuda
-  batch_size: 1
+  batch_size: 32
   validation_batch_size: 1
   num_workers: 0
   optimizer: adamw

@@ -35,7 +35,7 @@ training:
   device: cuda
   polygon_batch_probability: 0.5
   box_batch_probability: 0.5
-  batch_size: 1
+  batch_size: 32
   validation_batch_size: 1
   num_workers: 0
   optimizer: adamw
