@@ -46,8 +46,8 @@ training:
   validation_batches: 1
   checkpoint_interval: 10
   total_steps: 300
-  output_dir: outputs/experiment_c_boxinst
-  tensorboard: {enabled: true, log_dir: outputs/experiment_c_boxinst/tensorboard}
+  output_dir: /kaggle/working/experiment_c
+  tensorboard: {enabled: true, log_dir: /kaggle/working/experiment_c/tensorboard}
 scale_test:
   factors: [0.6, 0.75, 1.0, 1.25, 1.5, 1.75]
   score_threshold: 0.5

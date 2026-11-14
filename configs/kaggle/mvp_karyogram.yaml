@@ -50,15 +50,15 @@ classifier_training:
   learning_rate: 0.0005
   weight_decay: 0.01
   epochs: 20
-  output_dir: outputs/chromosome_classifier_vit_b16_lora
+  output_dir: /kaggle/working/chromosome_classifier_vit_b16_lora
   tensorboard:
     enabled: true
-    log_dir: outputs/chromosome_classifier_vit_b16_lora/tensorboard
+    log_dir: /kaggle/working/chromosome_classifier_vit_b16_lora/tensorboard
 mvp_inference:
   device: cuda
-  segmentation_checkpoint: outputs/experiment_a_pretrained/last.pt
-  classifier_checkpoint: outputs/chromosome_classifier_vit_b16_lora/last.pt
-  output_dir: outputs/karyogram_mvp
+  segmentation_checkpoint: /kaggle/working/experiment_a/last.pt
+  classifier_checkpoint: /kaggle/working/chromosome_classifier_vit_b16_lora/last.pt
+  output_dir: /kaggle/working/karyogram_mvp
   segmentation_score_threshold: 0.5
   mask_threshold: 0.5
   crop_padding: 12

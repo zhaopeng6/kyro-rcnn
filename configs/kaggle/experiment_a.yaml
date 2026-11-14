@@ -52,10 +52,10 @@ training:
   validation_batches: 1
   tensorboard:
     enabled: true
-    log_dir: outputs/experiment_a_pretrained/tensorboard
+    log_dir: /kaggle/working/experiment_a/tensorboard
   total_steps: 30
   checkpoint_interval: 10
-  output_dir: outputs/experiment_a_pretrained
+  output_dir: /kaggle/working/experiment_a
 scale_test:
   factors: [0.6, 0.75, 1.0, 1.25, 1.5, 1.75]
   score_threshold: 0.5
